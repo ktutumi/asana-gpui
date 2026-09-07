@@ -22,10 +22,7 @@ impl WorkspaceApp {
         let permalink = task.permalink_url.clone();
         let workspace = self.data.workspace.gid.clone();
         v_flex()
-            .w(rems(31.))
-            .max_w(relative(0.48))
-            .min_w(rems(25.))
-            .h_full()
+            .size_full()
             .flex_shrink_0()
             .border_l_1()
             .border_color(cx.theme().border)

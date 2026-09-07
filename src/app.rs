@@ -67,6 +67,8 @@ pub struct WorkspaceApp {
     sort_by_due: bool,
     collapsed: HashSet<String>,
     sidebar_visible: bool,
+    sidebar_layout: Entity<resizable::ResizableState>,
+    detail_layout: Entity<resizable::ResizableState>,
     inbox_archive: bool,
     inbox_unread: bool,
     query: Entity<InputState>,
@@ -115,6 +117,11 @@ impl WorkspaceApp {
                 .placeholder("Capture a thought, a reminder, or your next idea…")
         });
         let mut subscriptions = Vec::new();
+        let sidebar_layout = cx.new(|_| resizable::ResizableState::default());
+        let detail_layout = cx.new(|_| resizable::ResizableState::default());
+        for layout in [&sidebar_layout, &detail_layout] {
+            subscriptions.push(cx.observe(layout, |_, _, cx| cx.notify()));
+        }
         subscriptions.push(cx.on_app_quit(|this, cx| {
             let previous = this.credential_write.take();
             let keep_alive = cx.entity();
@@ -167,6 +174,8 @@ impl WorkspaceApp {
             sort_by_due: false,
             collapsed: HashSet::new(),
             sidebar_visible: true,
+            sidebar_layout,
+            detail_layout,
             inbox_archive: false,
             inbox_unread: false,
             query,

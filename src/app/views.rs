@@ -4,6 +4,7 @@ use gpui_kit::{
         button::{Button, ButtonVariants},
         input::{Input, Textarea},
         menu::{DropdownMenu, PopupMenuItem},
+        resizable::{h_resizable, resizable_panel},
         spinner::Spinner,
     },
     prelude::FluentBuilder,
@@ -168,8 +169,7 @@ impl WorkspaceApp {
         let workspaces = self.workspaces.clone();
         let current = self.data.workspace.gid.clone();
         v_flex()
-            .w_56()
-            .h_full()
+            .size_full()
             .flex_shrink_0()
             .bg(cx.theme().sidebar)
             .border_r_1()
@@ -1763,6 +1763,53 @@ impl WorkspaceApp {
 
 impl Render for WorkspaceApp {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let mut content = v_flex()
+            .size_full()
+            .min_w_0()
+            .child(match self.page {
+                Page::Home => self.render_home(cx),
+                Page::Inbox => self.render_inbox(cx),
+                Page::MyTasks | Page::Project(_) => self.render_task_page(cx),
+                Page::Projects => self.render_projects(cx),
+                Page::Settings => self.render_settings(cx),
+            })
+            .into_any_element();
+        if self.selected.is_some() {
+            content = h_resizable("task-detail-layout")
+                .with_state(&self.detail_layout)
+                .child(
+                    resizable_panel()
+                        .size_range(px(260.)..Pixels::MAX)
+                        .child(content),
+                )
+                .child(
+                    resizable_panel()
+                        .size(px(434.))
+                        .size_range(px(350.)..px(720.))
+                        .flex_none()
+                        .child(self.render_task_detail(cx)),
+                )
+                .into_any_element();
+        }
+        if self.sidebar_visible {
+            content = h_resizable("sidebar-layout")
+                .with_state(&self.sidebar_layout)
+                .child(
+                    resizable_panel()
+                        .size(px(196.))
+                        .size_range(px(180.)..px(360.))
+                        .flex_none()
+                        .child(self.render_sidebar(cx)),
+                )
+                .child(
+                    resizable_panel()
+                        .size_range(
+                            px(if self.selected.is_some() { 610. } else { 320. })..Pixels::MAX,
+                        )
+                        .child(content),
+                )
+                .into_any_element();
+        }
         v_flex()
             .size_full()
             .bg(cx.theme().background)
@@ -1799,17 +1846,7 @@ impl Render for WorkspaceApp {
                     .min_h_0()
                     .min_w_0()
                     .child(self.render_rail(cx))
-                    .when(self.sidebar_visible, |d| d.child(self.render_sidebar(cx)))
-                    .child(v_flex().flex_1().min_w_0().h_full().child(match self.page {
-                        Page::Home => self.render_home(cx),
-                        Page::Inbox => self.render_inbox(cx),
-                        Page::MyTasks | Page::Project(_) => self.render_task_page(cx),
-                        Page::Projects => self.render_projects(cx),
-                        Page::Settings => self.render_settings(cx),
-                    }))
-                    .when(self.selected.is_some(), |d| {
-                        d.child(self.render_task_detail(cx))
-                    })
+                    .child(div().flex_1().min_w_0().h_full().child(content))
                     .into_any_element()
             })
             .child(self.render_status(cx))
