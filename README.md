@@ -47,7 +47,7 @@ scripts/bundle-macos.sh --release
 生成先は `target/debug/Asana GPUI.app` または `target/release/Asana GPUI.app` です。
 Finder からの起動では、シェルの環境変数が引き継がれない場合があります。
 初回は上記のコマンドで起動するか、接続画面に Client ID と Client secret を入力してください。
-署名・公証・自動更新は含みません。
+ローカル実行用のアドホック署名を付けます。配布用署名・公証・自動更新は含みません。
 
 ## OAuth の設定
 

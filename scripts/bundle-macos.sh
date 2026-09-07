@@ -9,7 +9,8 @@ case "${1:-}" in
 esac
 bundle="target/$profile/Asana GPUI.app"
 mkdir -p "$bundle/Contents/MacOS"
-cp "target/$profile/asana-gpui" "$bundle/Contents/MacOS/asana-gpui"
+cp "target/$profile/asana-gpui" "$bundle/Contents/MacOS/asana-gpui.new"
+mv -f "$bundle/Contents/MacOS/asana-gpui.new" "$bundle/Contents/MacOS/asana-gpui"
 cat > "$bundle/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -24,4 +25,5 @@ cat > "$bundle/Contents/Info.plist" <<'PLIST'
 <key>LSMinimumSystemVersion</key><string>12.0</string>
 </dict></plist>
 PLIST
+codesign --force --sign - "$bundle"
 printf '%s\n' "$bundle"
