@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Asana GPUI
+Comment=Manage your Asana workspace
+Exec=asana-gpui
+TryExec=asana-gpui
+Icon=jp.ktutumi.asana-gpui
+Terminal=false
+Categories=Office;ProjectManagement;
+Keywords=Asana;Tasks;
+StartupWMClass=jp.ktutumi.asana-gpui

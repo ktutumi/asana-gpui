@@ -14,7 +14,12 @@ pub fn apply(light: bool, cx: &mut App) {
         cx,
     );
     let theme = Theme::global_mut(cx);
-    theme.font_family = ".AppleSystemUIFont".into();
+    theme.font_family = if cfg!(target_os = "macos") {
+        ".AppleSystemUIFont"
+    } else {
+        ".SystemUIFont"
+    }
+    .into();
     theme.font_size = px(14.);
     // Product palette: mirrors Asana's quiet Work surfaces, shared by every screen.
     if light {
