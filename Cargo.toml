@@ -1,0 +1,26 @@
+[package]
+name = "asana-gpui"
+version = "0.1.0"
+edition = "2024"
+description = "A native Asana workspace built with GPUI Kit"
+publish = false
+
+[dependencies]
+gpui-kit = "=0.6.0"
+anyhow = "1"
+base64 = "0.22"
+chrono = { version = "0.4", features = ["serde"] }
+rand = "0.9"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+url = "2"
+
+[profile.dev]
+debug = 0
+
+[profile.release]
+strip = true
+lto = "thin"
+
