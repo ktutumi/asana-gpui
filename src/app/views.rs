@@ -1,4 +1,11 @@
 use super::*;
+
+// Matches GPUI's `secondary` modifier used by the key bindings.
+const SHORTCUT_MODIFIER: &str = if cfg!(target_os = "macos") {
+    "⌘"
+} else {
+    "Ctrl"
+};
 use gpui_kit::{
     component::{
         button::{Button, ButtonVariants},
@@ -81,7 +88,7 @@ impl WorkspaceApp {
                 div()
                     .text_xs()
                     .text_color(cx.theme().muted_foreground)
-                    .child("⌘ K"),
+                    .child(format!("{SHORTCUT_MODIFIER} K")),
             )
             .child(div().flex_1())
             .when(self.demo, |d| {
@@ -318,7 +325,7 @@ impl WorkspaceApp {
                 })
             })
             .child(div().flex_1())
-            .child("⌘ N  New task     ⌘ R  Refresh     Esc  Close details")
+            .child(format!("{SHORTCUT_MODIFIER} N  New task     {SHORTCUT_MODIFIER} R  Refresh     Esc  Close details"))
     }
 
     fn render_error(&self, cx: &mut Context<Self>) -> impl IntoElement {
@@ -1028,8 +1035,8 @@ impl WorkspaceApp {
                     .ghost()
                     .small()
                     .icon(IconName::RotateCw)
-                    .accessibility_label("Refresh · ⌘ R")
-                    .tooltip("Refresh · ⌘ R")
+                    .accessibility_label(format!("Refresh · {SHORTCUT_MODIFIER} R"))
+                    .tooltip(format!("Refresh · {SHORTCUT_MODIFIER} R"))
                     .disabled(self.busy.is_some())
                     .on_click(cx.listener(|this, _, window, cx| this.refresh(window, cx))),
             )

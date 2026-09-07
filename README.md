@@ -6,8 +6,9 @@ OAuth 2.0 で実際のワークスペースに接続し、タスクの作成・�
 
 ## 起動
 
-Rust と macOS の Xcode 開発ツールが必要です。
-開発・動作確認環境は macOS 26.6.2、Rust 1.98.1 です。
+Rust が必要です。macOS では Xcode 開発ツールも必要です。
+macOS の開発・動作確認環境は macOS 26.6.2、Rust 1.98.1 です。
+Linux の準備と検証範囲は後述の「Linux」を参照してください。
 
 接続せずに画面を試す場合:
 
@@ -49,6 +50,49 @@ Finder からの起動では、シェルの環境変数が引き継がれない�
 初回は上記のコマンドで起動するか、接続画面に Client ID と Client secret を入力してください。
 ローカル実行用のアドホック署名を付けます。配布用署名・公証・自動更新は含みません。
 
+## Linux
+
+Wayland と X11 の両方を有効にしています。
+まずデスクトップセッションの端末から `cargo run --locked -- --demo` で起動してください。
+SSH や TTY だけの環境では画面を表示できません。
+
+ビルドには C/C++ ツールチェーン、pkg-config、Fontconfig、FreeType、Wayland、X11/XCB、xkbcommon の開発用ライブラリが必要です。
+実行環境には GPU ドライバー、Vulkan ローダー、日本語を含む表示用フォント、既定ブラウザを開く `xdg-open` を用意してください。
+上流の [Linux 依存関係インストール手順](https://github.com/longbridge/gpui-kit/blob/main/script/install-linux.sh) も参照できます。
+ディストリビューションによってパッケージ名が異なります。
+
+OAuth セッションの保存には、ログイン中の D-Bus セッションと Secret Service 対応の資格情報ストア（GNOME Keyring など）が必要です。
+ストアが使えない場合はエラーを表示し、その起動中だけ接続できます。
+PAT は Linux でも保存しません。
+
+Linux 用の実行ファイルとデスクトップファイルをまとめる場合:
+
+```sh
+sh scripts/bundle-linux.sh
+target/debug/asana-gpui-linux/bin/asana-gpui --demo
+
+# 最適化ビルド
+sh scripts/bundle-linux.sh --release
+```
+
+生成先は `target/debug/asana-gpui-linux/` または `target/release/asana-gpui-linux/` です。
+スクリプトは実行した Linux の CPU アーキテクチャ向けにビルドし、システムへのインストールは行いません。
+共有ライブラリや GPU ドライバーは同梱しないため、生成物が別のディストリビューションで動くことは保証しません。
+
+アプリメニューへ登録する場合は、生成物を `/usr/local` などデスクトップセッションの `PATH` が通る場所へ配置します。
+以下はデバッグビルドの配置例です。最適化ビルドを使う場合は `debug` を `release` に変更してください。
+
+```sh
+sudo install -Dm755 target/debug/asana-gpui-linux/bin/asana-gpui /usr/local/bin/asana-gpui
+sudo install -Dm644 target/debug/asana-gpui-linux/share/applications/jp.ktutumi.asana-gpui.desktop /usr/local/share/applications/jp.ktutumi.asana-gpui.desktop
+sudo install -Dm644 target/debug/asana-gpui-linux/share/icons/hicolor/scalable/apps/jp.ktutumi.asana-gpui.svg /usr/local/share/icons/hicolor/scalable/apps/jp.ktutumi.asana-gpui.svg
+```
+
+アプリメニューからの起動ではシェルの環境変数が引き継がれない場合があります。
+その場合は接続画面へ Client ID と Client secret を入力してください。
+削除する場合は上記の配置先の 3 ファイルを削除します。
+保存済みのセッションを削除するには、先にアプリからサインアウトしてください。
+
 ## OAuth の設定
 
 Asana Developer Console の OAuth アプリに、次の Redirect URL を登録してください。
@@ -84,6 +128,7 @@ Granular scopes を使用する場合は、Developer Console で必要なスコ�
 
 OAuth の access token、refresh token、クライアント設定は OS の資格情報ストアに保存します。
 macOS では Keychain の `asana-gpui.oauth` を使用します。
+Linux では Secret Service 対応の資格情報ストアを使用します。
 期限切れ前の更新に対応し、サインアウトでは保存処理の完了を待ってから資格情報を削除します。
 `ASANA_API_KEY` は保存せず、そのプロセス内だけで使用します。
 ソースやアプリのバンドルに Client secret を埋め込まないでください。
@@ -106,15 +151,15 @@ macOS では Keychain の `asana-gpui.oauth` を使用します。
 説明などの変更していないフィールドは API に送信せず、他の利用者による更新の上書きを抑えます。
 同じフィールドを同時に編集した場合の競合解決画面はありません。
 
-| ショートカット | 操作 |
-| --- | --- |
-| `⌘ K` | 検索欄へ移動 |
-| `⌘ N` | My tasks の新規タスク入力へ移動 |
-| `Enter` | 新規タスクを作成 |
-| `⌘ S` | タスク詳細を保存 |
-| `⌘ R` | 現在のデータを再取得 |
-| `Esc` | タスク詳細を閉じる |
-| `⌘ Q` | 終了 |
+| macOS | Linux | 操作 |
+| --- | --- | --- |
+| `⌘ K` | `Ctrl K` | 検索欄へ移動 |
+| `⌘ N` | `Ctrl N` | My tasks の新規タスク入力へ移動 |
+| `Enter` | `Enter` | 新規タスクを作成 |
+| `⌘ S` | `Ctrl S` | タスク詳細を保存 |
+| `⌘ R` | `Ctrl R` | 現在のデータを再取得 |
+| `Esc` | `Esc` | タスク詳細を閉じる |
+| `⌘ Q` | `Ctrl Q` | 終了 |
 
 ## Web 版との違い
 
@@ -125,6 +170,7 @@ API の制約は [Asana の Inbox API に関する回答](https://forum.asana.co
 
 お気に入り、既読・アーカイブ、メモ、テーマ、選択ワークスペースは利用者ごとに端末へ保存します。
 macOS の標準保存先は `~/Library/Application Support/asana-gpui/<user-gid>.json` です。
+Linux では `$XDG_CONFIG_HOME/asana-gpui/<user-gid>.json`、`XDG_CONFIG_HOME` が未設定なら `~/.config/asana-gpui/<user-gid>.json` です。
 メモは Save note または画面を離れるときに保存します。
 ローカルファイルが壊れていた場合は上書きせず、エラーを表示します。
 デモの変更はメモリ内だけに保持します。
@@ -144,6 +190,17 @@ cargo test --locked
 ```
 
 OAuth の PKCE とコールバック検証、更新トークンの保持、ページ送り、タスクの絞り込み、編集差分、更新時の順序保持をテストします。
+
+Linux の GUI 動作は、Wayland と X11 の各デスクトップセッションで以下を確認してください。
+
+- `--demo` での起動、ライト／ダーク表示、日本語の表示と IME 入力、コピーと貼り付け。
+- Ctrl ショートカット、ウインドウの移動とリサイズ、拡大率変更、未保存編集がある状態での終了操作。
+- OAuth のブラウザ起動とコールバック、再起動時のセッション復元、サインアウト後の資格情報削除。
+- 資格情報ストアが使えない場合のエラー表示と、その起動中だけの接続。
+- ローカル設定の保存と復元、アプリメニューからの起動とアイコン表示。
+
+Linux のビルド検証環境は Omarchy 4.0.2（Arch 系）、Rust 1.98.1 です。
+GUI と実 OAuth の Linux 上での動作確認は未実施です。
 
 実 API の書き込みテストは通常実行から除外しています。
 実行すると指定したテストプロジェクトにタスクとコメントを作成し、編集・セクション移動・完了まで検証します。

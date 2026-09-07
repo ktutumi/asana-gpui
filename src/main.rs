@@ -23,6 +23,7 @@ fn main() {
             ]);
             // Window dimensions are a native platform boundary, not content spacing.
             let options = WindowOptions {
+                app_id: Some("jp.ktutumi.asana-gpui".into()),
                 window_bounds: Some(WindowBounds::centered(size(px(1440.), px(900.)), cx)),
                 window_min_size: Some(size(px(1000.), px(680.))),
                 titlebar: Some(TitlebarOptions {
